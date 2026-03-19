@@ -36,6 +36,13 @@ No external graph database required — the knowledge graph runs entirely on Dat
 │  │  Treatment ──▶ │  │   outcomes        │  │ • Query perf       │     │
 │  │   Outcome      │  │ • Adverse events  │  │ • Governance       │     │
 │  └────────────────┘  └───────────────────┘  └────────────────────┘     │
+│                                                                         │
+│  ┌──────────────────────────────────────────────────────────────────┐   │
+│  │               Databricks App (Streamlit)                         │   │
+│  │  Patient 360 │ Treatment Analytics │ Adverse Events │ Lab Trends │   │
+│  │  Knowledge Graph Explorer │ Overview Dashboard                   │   │
+│  │  Connects directly to Lakebase via OAuth + psycopg              │   │
+│  └──────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -69,8 +76,22 @@ HLS Knowledge Graph/
 │   ├── 02_seed_metrics_data.py             # Generate 7 days of sample metrics
 │   └── 03_lakebase_dashboard_queries.sql   # 25+ dashboard widget queries
 │
-└── 06_end_to_end_demo/
-    └── 00_run_demo.py                      # Full orchestration notebook
+├── 06_end_to_end_demo/
+│   └── 00_run_demo.py                      # Full orchestration notebook
+│
+└── 07_databricks_app/
+    ├── app.yaml                            # Databricks App configuration
+    ├── app.py                              # Main Streamlit application
+    ├── db.py                               # Lakebase connection (OAuth + pool)
+    ├── requirements.txt                    # Python dependencies
+    ├── SETUP.md                            # Deployment instructions
+    └── pages/
+        ├── overview.py                     # KPI dashboard
+        ├── patient_360.py                  # Patient search & detail view
+        ├── treatment_analytics.py          # Treatment efficacy analysis
+        ├── adverse_events.py               # Safety surveillance
+        ├── lab_results.py                  # Lab trends & abnormal flags
+        └── knowledge_graph.py              # Interactive graph explorer
 ```
 
 ## Prerequisites
@@ -108,6 +129,9 @@ Graph traversals implemented entirely in Databricks SQL using recursive CTEs. Mo
 
 ### Lakebase Internals Dashboard
 Dedicated dashboard showcasing Lakebase platform capabilities with 7 days of simulated metrics across 6 feature areas: autoscaling & compute, Lakehouse Sync CDC, branching, query performance, DML throughput, and Unity Catalog governance. 25+ ready-to-use dashboard widget queries.
+
+### Databricks App (Streamlit)
+Interactive web application deployed on Databricks Apps, connecting directly to Lakebase via OAuth-authenticated Postgres. Six pages: Overview dashboard, Patient 360 (search + full clinical profile), Treatment Analytics (efficacy comparisons), Adverse Events Monitor (safety surveillance), Lab Results Tracker (trends + abnormal flags), and Knowledge Graph Explorer (interactive visual graph of patient journeys). See `07_databricks_app/SETUP.md` for deployment instructions.
 
 ### AI/BI (Dashboards + Genie)
 - **Dashboards**: Visual analytics on treatment efficacy, patient outcomes, adverse events, and Lakebase platform health

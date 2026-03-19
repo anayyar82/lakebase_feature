@@ -1,0 +1,5 @@
+streamlit
+psycopg[binary,pool]
+databricks-sdk
+pandas
+plotly
