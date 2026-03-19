@@ -1,18 +1,100 @@
 -- =============================================================================
--- HLS Knowledge Graph — Gold-Layer Analytics Views
+-- HLS Knowledge Graph — Current State + Gold-Layer Analytics Views
 -- =============================================================================
--- Built on top of the Delta tables auto-synced from Lakebase via Lakehouse Sync.
--- These views power AI/BI dashboards and Genie spaces.
+-- Lakehouse Sync creates Delta tables named lb_<table>_history with SCD Type 2
+-- history. First we create "current state" views that deduplicate to the latest
+-- row, then build gold analytics views on top of those.
 -- =============================================================================
 
--- Use the synced catalog/schema
 USE CATALOG users;
 USE SCHEMA ankur_nayyar;
 
+-- =============================================================================
+-- PART A: Current-State Views (from lb_*_history SCD Type 2 tables)
+-- =============================================================================
+-- Each view extracts the latest version of every row, excluding deletes.
+-- Pattern: ROW_NUMBER() partitioned by PK, ordered by _lsn DESC.
+
+CREATE OR REPLACE VIEW patients AS
+SELECT * EXCEPT (rn, _lsn, _commit_timestamp, _commit_version, _change_type)
+FROM (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY patient_id ORDER BY _lsn DESC) AS rn
+    FROM lb_patients_history
+    WHERE _change_type IN ('insert', 'update_postimage', 'delete')
+) WHERE rn = 1 AND _change_type != 'delete';
+
+CREATE OR REPLACE VIEW providers AS
+SELECT * EXCEPT (rn, _lsn, _commit_timestamp, _commit_version, _change_type)
+FROM (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY provider_id ORDER BY _lsn DESC) AS rn
+    FROM lb_providers_history
+    WHERE _change_type IN ('insert', 'update_postimage', 'delete')
+) WHERE rn = 1 AND _change_type != 'delete';
+
+CREATE OR REPLACE VIEW encounters AS
+SELECT * EXCEPT (rn, _lsn, _commit_timestamp, _commit_version, _change_type)
+FROM (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY encounter_id ORDER BY _lsn DESC) AS rn
+    FROM lb_encounters_history
+    WHERE _change_type IN ('insert', 'update_postimage', 'delete')
+) WHERE rn = 1 AND _change_type != 'delete';
+
+CREATE OR REPLACE VIEW diagnoses AS
+SELECT * EXCEPT (rn, _lsn, _commit_timestamp, _commit_version, _change_type)
+FROM (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY diagnosis_id ORDER BY _lsn DESC) AS rn
+    FROM lb_diagnoses_history
+    WHERE _change_type IN ('insert', 'update_postimage', 'delete')
+) WHERE rn = 1 AND _change_type != 'delete';
+
+CREATE OR REPLACE VIEW treatments AS
+SELECT * EXCEPT (rn, _lsn, _commit_timestamp, _commit_version, _change_type)
+FROM (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY treatment_id ORDER BY _lsn DESC) AS rn
+    FROM lb_treatments_history
+    WHERE _change_type IN ('insert', 'update_postimage', 'delete')
+) WHERE rn = 1 AND _change_type != 'delete';
+
+CREATE OR REPLACE VIEW medications AS
+SELECT * EXCEPT (rn, _lsn, _commit_timestamp, _commit_version, _change_type)
+FROM (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY medication_id ORDER BY _lsn DESC) AS rn
+    FROM lb_medications_history
+    WHERE _change_type IN ('insert', 'update_postimage', 'delete')
+) WHERE rn = 1 AND _change_type != 'delete';
+
+CREATE OR REPLACE VIEW treatment_outcomes AS
+SELECT * EXCEPT (rn, _lsn, _commit_timestamp, _commit_version, _change_type)
+FROM (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY outcome_id ORDER BY _lsn DESC) AS rn
+    FROM lb_treatment_outcomes_history
+    WHERE _change_type IN ('insert', 'update_postimage', 'delete')
+) WHERE rn = 1 AND _change_type != 'delete';
+
+CREATE OR REPLACE VIEW adverse_events AS
+SELECT * EXCEPT (rn, _lsn, _commit_timestamp, _commit_version, _change_type)
+FROM (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY event_id ORDER BY _lsn DESC) AS rn
+    FROM lb_adverse_events_history
+    WHERE _change_type IN ('insert', 'update_postimage', 'delete')
+) WHERE rn = 1 AND _change_type != 'delete';
+
+CREATE OR REPLACE VIEW lab_results AS
+SELECT * EXCEPT (rn, _lsn, _commit_timestamp, _commit_version, _change_type)
+FROM (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY result_id ORDER BY _lsn DESC) AS rn
+    FROM lb_lab_results_history
+    WHERE _change_type IN ('insert', 'update_postimage', 'delete')
+) WHERE rn = 1 AND _change_type != 'delete';
+
+-- =============================================================================
+-- PART B: Gold-Layer Analytics Views
+-- =============================================================================
+-- These reference the current-state views above, so downstream queries stay
+-- clean without SCD dedup logic.
+
 -- ---------------------------------------------------------------------------
 -- Patient 360 View
--- Comprehensive patient profile with demographics, diagnosis count, and
--- active treatment count.
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE VIEW gold_patient_360 AS
 SELECT
@@ -40,8 +122,6 @@ GROUP BY ALL;
 
 -- ---------------------------------------------------------------------------
 -- Treatment Efficacy Summary
--- Aggregates outcomes by treatment, showing improvement rates, average
--- baseline/result values, and adverse event counts.
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE VIEW gold_treatment_efficacy AS
 SELECT
@@ -72,8 +152,6 @@ GROUP BY t.treatment_name, t.treatment_type;
 
 -- ---------------------------------------------------------------------------
 -- Adverse Event Dashboard
--- Tracks adverse events by type, severity, CTCAE grade, and associated
--- treatment for safety monitoring.
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE VIEW gold_adverse_events AS
 SELECT
@@ -101,8 +179,6 @@ LEFT JOIN providers prov ON ae.reported_by = prov.provider_id;
 
 -- ---------------------------------------------------------------------------
 -- Patient Outcomes Timeline
--- Longitudinal view of how patient measures change over time for each
--- treatment, useful for trend analysis.
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE VIEW gold_outcomes_timeline AS
 SELECT
@@ -147,8 +223,6 @@ GROUP BY ALL;
 
 -- ---------------------------------------------------------------------------
 -- Diagnosis Cohort View
--- Enables cohort analysis: group patients by ICD-10 diagnosis with
--- demographics and treatment information.
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE VIEW gold_diagnosis_cohorts AS
 SELECT
