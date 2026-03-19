@@ -5,8 +5,8 @@
 -- platform capabilities. Each section = one dashboard widget.
 -- =============================================================================
 
-USE CATALOG hls_lakehouse;
-USE SCHEMA knowledge_graph;
+USE CATALOG users;
+USE SCHEMA ankur_nayyar;
 
 -- =====================================================================
 -- SECTION A: AUTOSCALING & COMPUTE

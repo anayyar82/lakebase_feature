@@ -8,8 +8,8 @@
 
 # COMMAND ----------
 
-CATALOG = "hls_lakehouse"
-SCHEMA  = "knowledge_graph"
+CATALOG = "users"
+SCHEMA  = "ankur_nayyar"
 
 spark.sql(f"USE CATALOG {CATALOG}")
 spark.sql(f"USE SCHEMA {SCHEMA}")

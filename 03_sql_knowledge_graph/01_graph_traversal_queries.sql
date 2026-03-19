@@ -11,8 +11,8 @@
 --   • Cycle-safe graph walks with depth limits
 -- =============================================================================
 
-USE CATALOG hls_lakehouse;
-USE SCHEMA knowledge_graph;
+USE CATALOG users;
+USE SCHEMA ankur_nayyar;
 
 -- ---------------------------------------------------------------------------
 -- 1. PATIENT TREATMENT JOURNEY (recursive path traversal)

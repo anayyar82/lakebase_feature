@@ -7,8 +7,8 @@
 -- as edges, but using standard SQL on Delta tables.
 -- =============================================================================
 
-USE CATALOG hls_lakehouse;
-USE SCHEMA knowledge_graph;
+USE CATALOG users;
+USE SCHEMA ankur_nayyar;
 
 -- ---------------------------------------------------------------------------
 -- EDGE VIEW: Patient → Treatment (with diagnosis context)

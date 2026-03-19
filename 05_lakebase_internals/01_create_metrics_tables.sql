@@ -6,8 +6,8 @@
 -- AI/BI dashboards that showcase Lakebase's key platform capabilities.
 -- =============================================================================
 
-USE CATALOG hls_lakehouse;
-USE SCHEMA knowledge_graph;
+USE CATALOG users;
+USE SCHEMA ankur_nayyar;
 
 -- ---------------------------------------------------------------------------
 -- AUTOSCALING METRICS

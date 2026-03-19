@@ -20,15 +20,15 @@ Add the following Unity Catalog tables/views to the Genie space:
 
 | Table / View | Description |
 |---|---|
-| `hls_lakehouse.knowledge_graph.gold_patient_360` | Patient demographics + summary stats |
-| `hls_lakehouse.knowledge_graph.gold_treatment_efficacy` | Treatment effectiveness metrics |
-| `hls_lakehouse.knowledge_graph.gold_adverse_events` | Adverse event details |
-| `hls_lakehouse.knowledge_graph.gold_outcomes_timeline` | Longitudinal outcome tracking |
-| `hls_lakehouse.knowledge_graph.gold_provider_activity` | Provider workload and panel |
-| `hls_lakehouse.knowledge_graph.gold_diagnosis_cohorts` | Diagnosis cohort demographics |
-| `hls_lakehouse.knowledge_graph.gold_lab_trends` | Lab result trends with change tracking |
-| `hls_lakehouse.knowledge_graph.treatments` | Raw treatment records |
-| `hls_lakehouse.knowledge_graph.patients` | Raw patient records |
+| `users.ankur_nayyar.gold_patient_360` | Patient demographics + summary stats |
+| `users.ankur_nayyar.gold_treatment_efficacy` | Treatment effectiveness metrics |
+| `users.ankur_nayyar.gold_adverse_events` | Adverse event details |
+| `users.ankur_nayyar.gold_outcomes_timeline` | Longitudinal outcome tracking |
+| `users.ankur_nayyar.gold_provider_activity` | Provider workload and panel |
+| `users.ankur_nayyar.gold_diagnosis_cohorts` | Diagnosis cohort demographics |
+| `users.ankur_nayyar.gold_lab_trends` | Lab result trends with change tracking |
+| `users.ankur_nayyar.treatments` | Raw treatment records |
+| `users.ankur_nayyar.patients` | Raw patient records |
 
 ## Step 3 — Configure Genie Instructions
 

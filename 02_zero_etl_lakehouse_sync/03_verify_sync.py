@@ -7,8 +7,8 @@
 
 # COMMAND ----------
 
-CATALOG = "hls_lakehouse"
-SCHEMA  = "knowledge_graph"
+CATALOG = "users"
+SCHEMA  = "ankur_nayyar"
 
 TABLES = [
     "patients",

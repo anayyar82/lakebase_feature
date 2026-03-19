@@ -6,8 +6,8 @@
 -- =============================================================================
 
 -- Use the synced catalog/schema
-USE CATALOG hls_lakehouse;
-USE SCHEMA knowledge_graph;
+USE CATALOG users;
+USE SCHEMA ankur_nayyar;
 
 -- ---------------------------------------------------------------------------
 -- Patient 360 View

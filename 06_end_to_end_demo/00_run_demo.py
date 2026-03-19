@@ -25,8 +25,8 @@
 
 LAKEBASE_PROJECT  = "hls-knowledge-graph"
 LAKEBASE_DATABASE = "hls_kg"
-CATALOG           = "hls_lakehouse"
-SCHEMA            = "knowledge_graph"
+CATALOG           = "users"
+SCHEMA            = "ankur_nayyar"
 
 # COMMAND ----------
 
