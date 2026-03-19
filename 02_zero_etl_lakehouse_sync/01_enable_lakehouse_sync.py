@@ -24,7 +24,7 @@
 # COMMAND ----------
 
 LAKEBASE_PROJECT  = "hls-knowledge-graph"         # Your Lakebase project name
-LAKEBASE_DATABASE = "hls_kg"                       # Postgres database name
+LAKEBASE_DATABASE = "postgres"                     # Postgres database name (default)
 CATALOG           = "users"                        # Unity Catalog catalog
 SCHEMA            = "ankur_nayyar"                 # Unity Catalog schema
 SYNC_MODE         = "continuous"                   # snapshot | triggered | continuous
