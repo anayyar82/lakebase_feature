@@ -16,25 +16,25 @@ patients, treatments, outcomes, and adverse events — without writing SQL.
 
 ## Step 2 — Add Tables
 
-Add the following Unity Catalog tables/views to the Genie space:
+Add the Lakebase tables to the Genie space. If your Lakebase project is
+registered as a Unity Catalog catalog, reference them with the catalog prefix.
+Otherwise, connect via the Lakebase SQL warehouse.
 
-| Table / View | Description |
+| Table | Description |
 |---|---|
-| `users.ankur_nayyar.gold_patient_360` | Patient demographics + summary stats |
-| `users.ankur_nayyar.gold_treatment_efficacy` | Treatment effectiveness metrics |
-| `users.ankur_nayyar.gold_adverse_events` | Adverse event details |
-| `users.ankur_nayyar.gold_outcomes_timeline` | Longitudinal outcome tracking |
-| `users.ankur_nayyar.gold_provider_activity` | Provider workload and panel |
-| `users.ankur_nayyar.gold_diagnosis_cohorts` | Diagnosis cohort demographics |
-| `users.ankur_nayyar.gold_lab_trends` | Lab result trends with change tracking |
-| `users.ankur_nayyar.treatments` | Raw treatment records |
-| `users.ankur_nayyar.patients` | Raw patient records |
+| `patients` | Patient demographics and contact info |
+| `providers` | Provider details, specialty, department |
+| `encounters` | Patient-provider encounters |
+| `diagnoses` | ICD-10 coded diagnoses |
+| `treatments` | Treatment records with dosage and frequency |
+| `medications` | Medication prescriptions |
+| `treatment_outcomes` | Outcome assessments with baseline/result values |
+| `adverse_events` | Adverse events with severity and CTCAE grades |
+| `lab_results` | Lab test results with reference ranges |
 
 ## Step 3 — Configure Genie Instructions
 
-Paste the following into the **Instructions** field of your Genie space. These
-instructions teach Genie about the domain, data model, and expected question
-patterns.
+Paste the following into the **Instructions** field of your Genie space:
 
 ```text
 You are a clinical data assistant for a healthcare organization. You help
@@ -50,22 +50,30 @@ DOMAIN CONTEXT:
 - Severity levels: mild, moderate, severe, life-threatening
 
 DATA MODEL:
-- gold_patient_360: One row per patient with demographics and summary counts
-- gold_treatment_efficacy: One row per treatment with improvement rates and AE counts
-- gold_adverse_events: One row per adverse event with patient and treatment context
-- gold_outcomes_timeline: One row per outcome assessment with baseline/result values
-- gold_provider_activity: One row per provider with encounter and treatment counts
-- gold_diagnosis_cohorts: One row per patient-diagnosis pair with demographics
-- gold_lab_trends: One row per lab result with previous value and change
+- patients: One row per patient with demographics (MRN, DOB, gender, race, insurance, zip)
+- providers: One row per provider with specialty and department
+- encounters: One row per patient visit with admission/discharge dates
+- diagnoses: One row per diagnosis with ICD-10 code and status
+- treatments: One row per treatment with name, type, dosage, start/end dates
+- medications: One row per medication prescription with NDC code
+- treatment_outcomes: One row per outcome assessment with baseline and result values
+- adverse_events: One row per AE with severity, CTCAE grade, onset/resolution dates
+- lab_results: One row per lab test with result, reference range, abnormal flag
 
 TERMINOLOGY:
 - "Improvement rate" = percentage of outcomes that are type 'improvement'
 - "Serious AE" = adverse events with CTCAE grade >= 3
 - "Response rate" for cancer = RECIST improvement (target lesion shrinkage ≥ 30%)
-- When asked about "efficacy", use gold_treatment_efficacy
-- When asked about "side effects", use gold_adverse_events
-- When asked about "labs" or "bloodwork", use gold_lab_trends
-- When asked about a specific patient, use gold_patient_360 or filter by MRN
+- When asked about "side effects", query adverse_events
+- When asked about "labs" or "bloodwork", query lab_results
+- When asked about a specific patient, filter by MRN or name
+
+QUERY PATTERNS:
+- Patient age: EXTRACT(YEAR FROM AGE(CURRENT_DATE, date_of_birth))
+- Patient full name: first_name || ' ' || last_name
+- Active patients: WHERE is_active = TRUE
+- Join treatments to outcomes: ON treatment_id
+- Join adverse events to treatments: ON treatment_id
 
 DEFAULTS:
 - Show patient counts unless asked for specific names
@@ -76,7 +84,7 @@ DEFAULTS:
 
 ## Step 4 — Add Sample Questions
 
-Add these as **sample questions** in the Genie space to help users get started:
+Add these as **sample questions** to help users get started:
 
 1. "Which treatments have the highest improvement rate?"
 2. "Show me all adverse events for chemotherapy patients"
@@ -86,7 +94,7 @@ Add these as **sample questions** in the Genie space to help users get started:
 6. "Compare adverse event rates between Pembrolizumab and Doxorubicin"
 7. "List all patients over 70 with active cancer diagnoses"
 8. "What percentage of treatments have severe adverse events?"
-9. "Show the treatment pathway for patient MRN-100001"
+9. "Show abnormal lab results from this month"
 10. "Which diagnoses have the most patients?"
 
 ## Step 5 — Set Permissions
@@ -105,6 +113,6 @@ Ask a test question like:
 > "Which treatments have had the best outcomes for cancer patients?"
 
 Genie should:
-1. Identify the relevant table (`gold_treatment_efficacy`)
-2. Filter for cancer-related treatments
-3. Return a ranked list with improvement rates and adverse event counts
+1. Identify the relevant tables (`treatments`, `treatment_outcomes`, `diagnoses`)
+2. Filter for cancer-related diagnoses (ICD-10 codes starting with C)
+3. Return a ranked list with improvement rates and patient counts

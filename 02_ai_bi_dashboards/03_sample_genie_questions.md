@@ -33,7 +33,7 @@ persona and complexity level.
 - "Break down our patient population by age group and insurance type"
 - "Which ZIP codes have the most patients?"
 - "What is the gender distribution across cancer diagnoses?"
-- "Show diagnosis cohort sizes over time"
+- "Show diagnosis cohort sizes by ICD-10 code"
 
 ### Treatment Analytics
 - "Rank all treatments by improvement rate"
@@ -66,17 +66,3 @@ persona and complexity level.
 - "Are any treatments trending toward higher adverse event rates?"
 - "Which patients have the most encounters in the last 6 months?"
 - "Show readmission rates by diagnosis"
-
----
-
-## Graph Traversal Questions
-
-These questions leverage the SQL knowledge graph views and recursive CTEs:
-
-- "Find patients with similar treatment profiles to MRN-100001"
-- "What are the most common comorbidity patterns?"
-- "Which treatment pathways lead to the best outcomes for lung cancer?"
-- "Show the provider collaboration network for the Cancer Center"
-- "Identify treatment sequences that correlate with adverse events"
-- "Trace the full journey from diagnosis to outcome for cancer patients"
-- "Which providers share the most patients across specialties?"
