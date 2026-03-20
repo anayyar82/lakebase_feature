@@ -41,7 +41,7 @@ def render():
         range(len(patients)),
         format_func=lambda i: f"{patients.iloc[i]['mrn']} — {patients.iloc[i]['patient_name']}",
     )
-    pid = int(patients.iloc[selected_idx]["patient_id"])
+    pid = str(patients.iloc[selected_idx]["patient_id"])
 
     st.markdown("---")
 
@@ -71,7 +71,7 @@ def render():
     with tab_enc:
         enc = run_query_df("""
             SELECT e.encounter_id, e.encounter_type, e.admission_date,
-                   e.discharge_date, e.status,
+                   e.discharge_date, e.disposition,
                    pr.first_name || ' ' || pr.last_name AS provider,
                    pr.specialty
             FROM encounters e
@@ -115,9 +115,9 @@ def render():
 
     with tab_meds:
         meds = run_query_df("""
-            SELECT medication_name, ndc_code, dosage, route,
-                   frequency, start_date, end_date, status,
-                   prescribing_reason
+            SELECT drug_name, generic_name, ndc_code, dosage_form,
+                   strength, quantity, refills_remaining,
+                   prescribed_date
             FROM medications
             WHERE patient_id = %s
             ORDER BY start_date DESC

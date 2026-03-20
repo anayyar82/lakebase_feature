@@ -174,7 +174,7 @@ SELECT
     lr.abnormal_flag
 FROM lab_results lr
 JOIN patients p ON lr.patient_id = p.patient_id
-WHERE lr.abnormal_flag != 'normal'
+WHERE lr.abnormal_flag != 'N'
 ORDER BY lr.collected_date DESC
 LIMIT 200;
 

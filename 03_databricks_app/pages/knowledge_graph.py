@@ -41,7 +41,7 @@ def render():
         format_func=lambda i: f"{patients.iloc[i]['mrn']} — {patients.iloc[i]['name']}",
         key="kg_patient",
     )
-    pid = int(patients.iloc[sel]["patient_id"])
+    pid = str(patients.iloc[sel]["patient_id"])
     patient_name = patients.iloc[sel]["name"]
 
     st.markdown("---")

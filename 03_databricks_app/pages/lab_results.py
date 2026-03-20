@@ -16,7 +16,7 @@ def render():
             COUNT(*)                              AS total_results,
             COUNT(DISTINCT patient_id)            AS patients_tested,
             COUNT(DISTINCT test_name)             AS unique_tests,
-            COUNT(*) FILTER (WHERE abnormal_flag IN ('high', 'low', 'critical'))
+            COUNT(*) FILTER (WHERE abnormal_flag != 'N')
                                                   AS abnormal_count
         FROM lab_results
     """)
@@ -31,6 +31,7 @@ def render():
     st.markdown("---")
 
     # ── Filter by test ───────────────────────────────────────────────────────
+    # abnormal_flag values: N (normal), H (high), L (low), HH (critical high), LL (critical low)
 
     tests = run_query_df("SELECT DISTINCT test_name FROM lab_results ORDER BY 1")
     test_list = tests["test_name"].tolist()
@@ -39,13 +40,16 @@ def render():
     with col_f1:
         selected_test = st.selectbox("Lab Test", ["All"] + test_list)
     with col_f2:
-        flag_filter = st.selectbox("Abnormal Flag", ["All", "normal", "high", "low", "critical"])
+        flag_options = {"All": None, "Normal (N)": "N", "High (H)": "H",
+                        "Low (L)": "L", "Critical High (HH)": "HH", "Critical Low (LL)": "LL"}
+        flag_label = st.selectbox("Abnormal Flag", list(flag_options.keys()))
+        flag_value = flag_options[flag_label]
 
     where = []
     if selected_test != "All":
         where.append(f"lr.test_name = '{selected_test}'")
-    if flag_filter != "All":
-        where.append(f"lr.abnormal_flag = '{flag_filter}'")
+    if flag_value is not None:
+        where.append(f"lr.abnormal_flag = '{flag_value}'")
     where_clause = "WHERE " + " AND ".join(where) if where else ""
 
     # ── Abnormal distribution ────────────────────────────────────────────────
@@ -55,7 +59,16 @@ def render():
     with left:
         st.subheader("Results by Abnormal Flag")
         flags = run_query_df(f"""
-            SELECT lr.abnormal_flag, COUNT(*) AS count
+            SELECT
+                CASE lr.abnormal_flag
+                    WHEN 'N'  THEN 'Normal'
+                    WHEN 'H'  THEN 'High'
+                    WHEN 'L'  THEN 'Low'
+                    WHEN 'HH' THEN 'Critical High'
+                    WHEN 'LL' THEN 'Critical Low'
+                    ELSE lr.abnormal_flag
+                END AS flag_label,
+                COUNT(*) AS count
             FROM lab_results lr
             {where_clause}
             GROUP BY lr.abnormal_flag
@@ -63,11 +76,12 @@ def render():
         """)
         if not flags.empty:
             fig = px.pie(
-                flags, names="abnormal_flag", values="count",
-                color="abnormal_flag",
+                flags, names="flag_label", values="count",
+                color="flag_label",
                 color_discrete_map={
-                    "normal": "#2ecc71", "high": "#e67e22",
-                    "low": "#3498db", "critical": "#e74c3c",
+                    "Normal": "#2ecc71", "High": "#e67e22",
+                    "Low": "#3498db", "Critical High": "#e74c3c",
+                    "Critical Low": "#9b59b6",
                 },
             )
             fig.update_layout(height=350)
@@ -77,14 +91,14 @@ def render():
         st.subheader("Top Tests with Abnormal Results")
         top_abnormal = run_query_df("""
             SELECT test_name,
-                   COUNT(*) FILTER (WHERE abnormal_flag != 'normal') AS abnormal,
+                   COUNT(*) FILTER (WHERE abnormal_flag != 'N') AS abnormal,
                    COUNT(*) AS total,
                    ROUND(
-                       COUNT(*) FILTER (WHERE abnormal_flag != 'normal') * 100.0 / COUNT(*), 1
+                       COUNT(*) FILTER (WHERE abnormal_flag != 'N') * 100.0 / COUNT(*), 1
                    ) AS abnormal_pct
             FROM lab_results
             GROUP BY test_name
-            HAVING COUNT(*) FILTER (WHERE abnormal_flag != 'normal') > 0
+            HAVING COUNT(*) FILTER (WHERE abnormal_flag != 'N') > 0
             ORDER BY abnormal DESC
             LIMIT 10
         """)
@@ -120,7 +134,7 @@ def render():
                 format_func=lambda i: f"{pts.iloc[i]['mrn']} — {pts.iloc[i]['name']}",
                 key="lab_pt_select",
             )
-            pid = int(pts.iloc[sel]["patient_id"])
+            pid = str(pts.iloc[sel]["patient_id"])
 
             pt_tests = run_query_df("""
                 SELECT DISTINCT test_name FROM lab_results

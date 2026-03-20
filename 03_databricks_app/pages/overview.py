@@ -93,7 +93,7 @@ def render():
             pr.first_name || ' ' || pr.last_name AS provider_name,
             e.encounter_type,
             e.admission_date,
-            e.status
+            e.disposition
         FROM encounters e
         JOIN patients p ON e.patient_id = p.patient_id
         JOIN providers pr ON e.provider_id = pr.provider_id
