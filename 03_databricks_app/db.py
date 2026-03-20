@@ -75,8 +75,13 @@ def run_query(sql: str, params: tuple | None = None) -> list[dict]:
 def run_query_df(sql: str, params: tuple | None = None):
     """Execute a read query and return a pandas DataFrame."""
     import pandas as pd
+    from uuid import UUID
     rows = run_query(sql, params)
-    return pd.DataFrame(rows)
+    df = pd.DataFrame(rows)
+    for col in df.columns:
+        if df[col].apply(lambda x: isinstance(x, UUID)).any():
+            df[col] = df[col].astype(str)
+    return df
 
 
 def run_execute(sql: str, params: tuple | None = None) -> int:
