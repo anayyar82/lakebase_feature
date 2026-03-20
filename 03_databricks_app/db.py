@@ -77,3 +77,13 @@ def run_query_df(sql: str, params: tuple | None = None):
     import pandas as pd
     rows = run_query(sql, params)
     return pd.DataFrame(rows)
+
+
+def run_execute(sql: str, params: tuple | None = None) -> int:
+    """Execute an INSERT/UPDATE/DELETE and return rows affected."""
+    pool = get_pool()
+    with pool.connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, params)
+            conn.commit()
+            return cur.rowcount

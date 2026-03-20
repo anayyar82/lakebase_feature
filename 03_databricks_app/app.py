@@ -19,6 +19,7 @@ st.set_page_config(
 
 PAGES = {
     "Overview": "overview",
+    "Data Entry": "data_entry",
     "Patient 360": "patient_360",
     "Treatment Analytics": "treatment_analytics",
     "Adverse Events": "adverse_events",
@@ -35,6 +36,9 @@ selection = st.sidebar.radio("Navigate", list(PAGES.keys()), label_visibility="c
 if PAGES[selection] == "overview":
     from pages import overview
     overview.render()
+elif PAGES[selection] == "data_entry":
+    from pages import data_entry
+    data_entry.render()
 elif PAGES[selection] == "patient_360":
     from pages import patient_360
     patient_360.render()
