@@ -3,3 +3,4 @@ psycopg[binary,pool]
 databricks-sdk
 pandas
 plotly
+requests

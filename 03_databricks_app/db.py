@@ -2,7 +2,7 @@
 Database connection helper for Databricks Lakebase with OAuth token rotation.
 
 When deployed as a Databricks App, the service principal ID is used as
-the Postgres username, and OAuth tokens are generated automatically.
+the Postgres username, and OAuth tokens are generated via the REST API.
 """
 
 import os
@@ -19,22 +19,26 @@ PGUSER = os.environ.get(
     "PGUSER",
     os.environ.get("DATABRICKS_CLIENT_ID", "56dfcd38-371a-40af-b14d-32f7eb8b3b2f"),
 )
-ENDPOINT_NAME = os.environ.get("ENDPOINT_NAME", "")
+ENDPOINT_NAME = os.environ.get(
+    "ENDPOINT_NAME",
+    "projects/lakebaseankur/branches/production/endpoints/primary",
+)
 
 
-def _get_workspace_client():
+def _generate_db_credential() -> str:
+    """Generate a fresh Lakebase OAuth token using the Databricks REST API."""
     from databricks.sdk import WorkspaceClient
-    return WorkspaceClient()
+    import requests
 
+    w = WorkspaceClient()
 
-def _get_oauth_token() -> str:
-    """Generate a fresh OAuth token for Lakebase authentication."""
-    w = _get_workspace_client()
-    if ENDPOINT_NAME:
-        credential = w.postgres.generate_database_credential(endpoint=ENDPOINT_NAME)
-        return credential.token
-    token = w.config.authenticate()
-    return token.get("Authorization", "").replace("Bearer ", "")
+    api_url = f"{w.config.host}/api/2.0/postgres/credentials"
+    headers = w.config.authenticate()
+    payload = {"endpoint": ENDPOINT_NAME}
+
+    resp = requests.post(api_url, headers=headers, json=payload)
+    resp.raise_for_status()
+    return resp.json()["token"]
 
 
 class OAuthConnection(psycopg.Connection):
@@ -42,7 +46,7 @@ class OAuthConnection(psycopg.Connection):
 
     @classmethod
     def connect(cls, conninfo="", **kwargs):
-        kwargs["password"] = _get_oauth_token()
+        kwargs["password"] = _generate_db_credential()
         return super().connect(conninfo, **kwargs)
 
 
