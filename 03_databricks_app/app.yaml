@@ -5,10 +5,10 @@ env:
   - name: PGDATABASE
     value: "databricks_postgres"
   - name: PGUSER
-    description: "Service principal client ID (auto-injected when Lakebase is added as resource)"
+    value: "56dfcd38-371a-40af-b14d-32f7eb8b3b2f"
   - name: PGPORT
     value: "5432"
   - name: PGSSLMODE
     value: "require"
   - name: ENDPOINT_NAME
-    description: "Lakebase endpoint path (auto-injected when Lakebase is added as resource)"
+    value: "projects/lakebaseankur/branches/production/endpoints/primary"
